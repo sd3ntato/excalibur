@@ -3,6 +3,7 @@ import re
 import glob
 import json
 import datetime as dt
+from backports.zoneinfo import ZoneInfo
 
 import pandas as pd
 from flask import (
@@ -56,7 +57,7 @@ def files():
     file = request.files["file-0"]
     if file and allowed_filename(file.filename):
         file_id = generate_uuid()
-        uploaded_at = dt.datetime.now()
+        uploaded_at = dt.datetime.now(ZoneInfo('Europe/Rome'))
         pages = request.form["pages"]
         filename = secure_filename(file.filename)
         filepath = os.path.join(conf.PDFS_FOLDER, file_id)
@@ -145,7 +146,7 @@ def rules(rule_id):
     file = request.files["file-0"]
     if file and allowed_filename(file.filename):
         rule_id = generate_uuid()
-        created_at = dt.datetime.now()
+        created_at = dt.datetime.now(ZoneInfo('Europe/Rome'))
         rule_name = os.path.splitext(secure_filename(file.filename))[0]
         rule_options = file.read()
         message = "Rule saved"
@@ -214,7 +215,7 @@ def jobs(job_id):
 
     if not rule_id:
         rule_id = generate_uuid()
-        created_at = dt.datetime.now()
+        created_at = dt.datetime.now(ZoneInfo('Europe/Rome'))
         rule_name = "_".join([os.path.splitext(file.filename)[0], random_string(6)])
         rule_options = request.form["rule_options"]
 
@@ -230,7 +231,7 @@ def jobs(job_id):
         session.close()
 
     job_id = generate_uuid()
-    started_at = dt.datetime.now()
+    started_at = dt.datetime.now(ZoneInfo('Europe/Rome'))
 
     session = Session()
     j = Job(job_id=job_id, started_at=started_at, file_id=file_id, rule_id=rule_id)

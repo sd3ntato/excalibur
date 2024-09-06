@@ -1,5 +1,4 @@
 import json
-import datetime as dt
 from typing import Any  # noqa
 
 from sqlalchemy import (
@@ -55,6 +54,6 @@ class Job(Base):
     render_files = Column(Text, default=json.dumps([]))
     is_finished = Column(Boolean, default=False)
     started_at = Column(DateTime)
-    finished_at = Column(DateTime, default=dt.datetime.now())
+    finished_at = Column(DateTime, default=None)
     file_id = Column(String(ID_LEN), ForeignKey("files.file_id"))
     rule_id = Column(String(ID_LEN), ForeignKey("rules.rule_id"))

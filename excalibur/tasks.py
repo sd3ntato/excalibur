@@ -3,6 +3,7 @@ import glob
 import json
 import logging
 import datetime as dt
+from backports.zoneinfo import ZoneInfo
 
 from camelot.core import TableList
 from camelot.parsers import Stream, Lattice
@@ -137,7 +138,7 @@ def extract(job_id):
         job.datapath = datapath
         job.render_files = json.dumps(render_files)
         job.is_finished = True
-        job.finished_at = dt.datetime.now()
+        job.finished_at = dt.datetime.now(ZoneInfo('Europe/Rome'))
 
         session.commit()
         session.close()
