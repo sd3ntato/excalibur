@@ -86,6 +86,10 @@ def files():
 
 @views.route("/workspaces/<string:file_id>", methods=["GET"])
 def workspaces(file_id):
+    json_output = request.args.get(
+        "json", default=False, type=lambda v: v.lower() in ["true", "1", "yes"]
+    )
+
     session = Session()
     file = session.query(File).filter(File.file_id == file_id).first()
     rules = session.query(Rule).order_by(Rule.created_at.desc()).all()
@@ -104,6 +108,20 @@ def workspaces(file_id):
         saved_rules = [
             {"rule_id": rule.rule_id, "rule_name": rule.rule_name} for rule in rules
         ]
+
+    if json_output:
+        return jsonify(
+            {
+                "filename": file.filename,
+                "filedims": filedims,
+                "imagedims": imagedims,
+                "detected_areas": detected_areas,
+                "saved_rules": [rule["rule_name"] for rule in saved_rules]
+                if saved_rules
+                else [],
+            }
+        )
+
     return render_template(
         "workspace.html",
         filename=file.filename,
@@ -167,6 +185,10 @@ def rules(rule_id):
 @views.route("/jobs", methods=["GET", "POST"], defaults={"job_id": None})
 @views.route("/jobs/<string:job_id>", methods=["GET"])
 def jobs(job_id):
+    json_output = request.args.get(
+        "json", default=False, type=lambda v: v.lower() in ["true", "1", "yes"]
+    )
+
     if request.method == "GET":
         if job_id is not None:
             session = Session()
@@ -181,9 +203,16 @@ def jobs(job_id):
                 key=lambda x: (int(re.split(regex, x)[1]), int(re.split(regex, x)[2])),
             ):
                 df = pd.read_json(render_files[k])
-                columns = df.columns.values
+                if json_output:
+                    columns = df.columns.values.tolist()
+                else:
+                    columns = df.columns.values
                 records = df.to_dict("records")
                 data.append({"title": k, "columns": columns, "records": records})
+
+            if json_output:
+                return jsonify(data)
+
             return render_template(
                 "job.html",
                 is_finished=job.is_finished,
